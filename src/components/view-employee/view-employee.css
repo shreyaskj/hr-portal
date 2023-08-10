@@ -1,5 +1,6 @@
-.edit-button {
-    margin: 0.5rem;
+.edit-button,
+.delete-button {
+    margin-right: 0.5rem;
 }
 
 .table-heading {

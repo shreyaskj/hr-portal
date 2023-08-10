@@ -36,16 +36,18 @@ const totalEmployeesInitialState = [
         dob: '1996-07-05',
         hireDate: '2018-07-05',
         email: 'shkamisetty@paypal.com',
-        salary: '105k',
+        salary: '65k',
         yearsInPosition: '5',
         employeeId: '1420712',
         city: 'Toronto',
-        title: 'Developer'
+        title: 'Developer',
+        status: 'ACTIVE',
     }
 ]
 
 const setEmployee = createAction('totalEmpls/setEmpls/object')
 const editEmployee = createAction('totalEmpls/editEmpls/object')
+const deleteEmployee = createAction('totalEmpls/deleteEmpls/object')
 
 const totalEmployeesReducer = createReducer(totalEmployeesInitialState, (builder) => {
     builder
@@ -57,6 +59,10 @@ const totalEmployeesReducer = createReducer(totalEmployeesInitialState, (builder
             const employeeIndex = totalEmployees.findIndex((emp) => emp.employeeId === action.payload.employeeId)
             totalEmployees[employeeIndex] = action.payload
             return totalEmployees
+        })
+        .addCase(deleteEmployee, (state, action) => {
+            const totalEmployees = Array.from(state)
+            return totalEmployees.filter((emp) => emp.employeeId !== action.payload.employeeId)
         })
 })
 
@@ -112,6 +118,7 @@ const reducers = {
 const actions = {
     setEmployee,
     editEmployee,
+    deleteEmployee,
     resetCurrentEmployee,
     firstName,
     middleName,

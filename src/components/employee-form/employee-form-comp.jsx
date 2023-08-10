@@ -11,6 +11,9 @@ import "./employee-form.css";
 import { isEmpty } from "lodash";
 
 const Input = (props) => {
+	const validationErrors = useSelector(selectors.getValidationErrors);
+	const currentEmployee = useSelector(selectors.getCurrentEmployee);
+
 	return (
 		<div className="mb-3">
 			<label htmlFor={props.id} className="lable">
@@ -18,11 +21,12 @@ const Input = (props) => {
 			</label>
 			<input
 				{...props}
+				value={currentEmployee[props.id] || ''}
 				className="form-control input"
 			/>
-			{props?.validationErrors[props.id] && (
+			{validationErrors[props.id] && (
 				<div id="validationError" class="form-text">
-					{props?.validationErrors[props.id]}
+					{validationErrors[props.id]}
 				</div>
 			)}
 		</div>
@@ -40,15 +44,18 @@ const Spinner = (props) => {
 };
 
 const Select = (props) => {
+	const currentEmployee = useSelector(selectors.getCurrentEmployee);
+
 	return (
 		<>
 			<label htmlFor={props?.id} className="lable">{props.label}</label>
 			<select
-				value={props.value}
+				value={currentEmployee[props.id] || ''}
 				className="form-select select"
 				id={props?.id}
 				onChange={props?.onChange}
 				disabled={props?.disabled}
+				required
 			>
 				{props.data.map((value, index) => (
 					<option key={index} value={value}>
@@ -107,7 +114,7 @@ export function EmployeeFormComp(props) {
 		setTimeout(() => setSpinner(false), 500)
 	}
 
-	function isValidationError(target) {
+	function handleValidations(target) {
 		const targetId = target.id;
 		const targetValue = target.value;
 		if (validationMapping[targetId] && validationMapping[targetId].validator(state, targetValue)) {
@@ -128,7 +135,7 @@ export function EmployeeFormComp(props) {
 		const targetElement = e.target;
 		const targetId = targetElement.id;
 		const targetValue = targetElement.value;
-		const validationErrorObj = isValidationError(targetElement)
+		const validationErrorObj = handleValidations(targetElement)
 		dispatch(actions.setValidationError(validationErrorObj));
 		dispatch(actions[targetId](targetValue));
 	}
@@ -152,40 +159,32 @@ export function EmployeeFormComp(props) {
 								<div className="col">
 									<Input
 										onChange={onChangeHandler}
-										value={currentEmployee?.firstName || ""}
 										type="text"
 										id="firstName"
 										label="First Name"
-										validationErrors={validationErrors}
 										disabled={isRestrictedView}
 										required
 									/>
 									<Input
 										onChange={onChangeHandler}
-										value={currentEmployee?.middleName || ""}
 										type="text"
 										id="middleName"
 										label="Middle Name"
-										validationErrors={validationErrors}
 										disabled={isRestrictedView}
 									/>
 									<Input
 										onChange={onChangeHandler}
-										value={currentEmployee?.lastName || ""}
 										type="text"
 										id="lastName"
 										label="Last Name"
-										validationErrors={validationErrors}
 										disabled={isRestrictedView}
 										required
 									/>
 									<Input
 										onChange={onChangeHandler}
-										value={currentEmployee?.phone || ""}
 										type="text"
 										id="phone"
 										label="Phone Number"
-										validationErrors={validationErrors}
 										disabled={isRestrictedView}
 										required
 									/>
@@ -195,15 +194,13 @@ export function EmployeeFormComp(props) {
 										id="city"
 										data={cities}
 										disabled={isRestrictedView}
-										value={currentEmployee?.city || ""}
+										required
 									/>
 									<Input
 										onChange={onChangeHandler}
-										value={currentEmployee?.dob || ""}
 										type="date"
 										id="dob"
 										label="Date of Birth"
-										validationErrors={validationErrors}
 										disabled={isRestrictedView}
 										required
 									/>
@@ -211,13 +208,11 @@ export function EmployeeFormComp(props) {
 								<div className="col">
 									<Input
 										onChange={onChangeHandler}
-										value={currentEmployee?.employeeId || ""}
 										type="text"
 										inputMode="numeric"
 										id="employeeId"
 										label="Employee ID"
 										disabled={isRestrictedView || isEditView}
-										validationErrors={validationErrors}
 										required
 									/>
 									<Select
@@ -226,46 +221,38 @@ export function EmployeeFormComp(props) {
 										label="Title"
 										data={titles}
 										disabled={isRestrictedView}
-										value={currentEmployee?.title || ""}
+										required
 									/>
 									<Input
 										onChange={onChangeHandler}
-										value={currentEmployee?.hireDate || ""}
 										type="date"
 										id="hireDate"
 										label="Date of Hiring"
-										validationErrors={validationErrors}
 										disabled={isRestrictedView}
 										required
 									/>
 									<Input
 										onChange={onChangeHandler}
-										value={currentEmployee?.email || ""}
 										type="email"
 										id="email"
 										label="Email"
-										validationErrors={validationErrors}
 										disabled={isRestrictedView}
 										required
 									/>
 									<Input
 										onChange={onChangeHandler}
-										value={currentEmployee?.salary || ""}
 										type="text"
 										id="salary"
 										inputMode="numeric"
 										label="Salary"
-										validationErrors={validationErrors}
 										disabled={isRestrictedView}
 										required
 									/>
 									<Input
 										onChange={onChangeHandler}
-										value={currentEmployee?.yearsInPosition || ""}
 										type="number"
 										id="yearsInPosition"
 										label="Years in Position"
-										validationErrors={validationErrors}
 										disabled={isRestrictedView}
 										required
 									/>
@@ -275,7 +262,7 @@ export function EmployeeFormComp(props) {
 										label="Status"
 										data={status}
 										disabled={isRestrictedView}
-										value={currentEmployee?.status || ""}
+										required
 									/>
 								</div>
 							</div>
