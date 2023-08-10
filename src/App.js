@@ -1,56 +1,29 @@
 import React from 'react';
-import logo from './logo.svg';
-import { Counter } from './features/counter/Counter';
+import { EmployeeFormComp, OpenModal } from './components/employee-form/employee-form-comp';
+import { ViewEmployees } from './components/view-employee/view-employee-comp'
 import './App.css';
+import { useDispatch } from 'react-redux';
+import { actions } from './components/reducer';
 
 function App() {
+  const dispatch = useDispatch()
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <Counter />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <span>
-          <span>Learn </span>
-          <a
-            className="App-link"
-            href="https://reactjs.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            React
-          </a>
-          <span>, </span>
-          <a
-            className="App-link"
-            href="https://redux.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Redux
-          </a>
-          <span>, </span>
-          <a
-            className="App-link"
-            href="https://redux-toolkit.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Redux Toolkit
-          </a>
-          ,<span> and </span>
-          <a
-            className="App-link"
-            href="https://react-redux.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            React Redux
-          </a>
-        </span>
-      </header>
+      <nav class="navbar navbar-expand-lg bg-body-tertiary">
+        <h2 class="navbar-brand logo">HR Portal</h2>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addEmployeeModal" onClick={(e) => {
+          dispatch(actions.setEmployeeAdditionSuccess())
+          dispatch(actions.resetCurrentEmployee({}))
+          dispatch(actions.setViewMode('ALLOWED'))
+        }}>
+          Add Employee
+        </button>
+      </nav>
+      <OpenModal>
+        <EmployeeFormComp />
+      </OpenModal>
+      <ViewEmployees />
     </div>
   );
 }

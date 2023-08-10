@@ -1,0 +1,22 @@
+.lable {
+    margin-bottom: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.input {
+    min-width: 18rem;
+}
+
+.lable-text {
+    padding: 0.2rem;
+}
+
+.input-element:focus {
+    border-color: black;
+    border-width: 0.5rem;
+    border-style: dashed;
+}
+
+.add-employee {
+    margin: 1rem;
+}
