@@ -1,19 +1,14 @@
 import React, { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { actions, selectors } from "../reducer";
+import {
+	cities,
+	titles,
+	status,
+	validationMapping
+} from '../../app/data'
 import "./employee-form.css";
-
-const cities = ["Choose City", "Toronto", "Ottawa", "Montreal", "Vancouver"];
-const titles = [
-	"Choose Title",
-	"Developer",
-	"Team Lead",
-	"Engineering Manager",
-	"Director",
-	"Quality Engineer",
-	"Product Manager",
-];
-const status = ["Status", "ACTIVE", "INACTIVE"];
+import { isEmpty } from "lodash";
 
 const Input = (props) => {
 	return (
@@ -22,12 +17,12 @@ const Input = (props) => {
 				{props.label}
 			</label>
 			<input
-					{...props}
-					className="form-control input"
-				/>
-			{props?.validationError?.error && (
+				{...props}
+				className="form-control input"
+			/>
+			{props?.validationErrors[props.id] && (
 				<div id="validationError" class="form-text">
-					{props?.validationError?.message}
+					{props?.validationErrors[props.id]}
 				</div>
 			)}
 		</div>
@@ -48,19 +43,19 @@ const Select = (props) => {
 	return (
 		<>
 			<label htmlFor={props?.id} className="lable">{props.label}</label>
-		<select
-			value={props.value}
-			className="form-select select"
-			id={props?.id}
-			onChange={props?.onChange}
-			disabled={props?.disabled}
-		>
-			{props.data.map((value, index) => (
-				<option key={index} value={value}>
-					{value}
-				</option>
-			))}
-		</select>
+			<select
+				value={props.value}
+				className="form-select select"
+				id={props?.id}
+				onChange={props?.onChange}
+				disabled={props?.disabled}
+			>
+				{props.data.map((value, index) => (
+					<option key={index} value={value}>
+						{value}
+					</option>
+				))}
+			</select>
 		</>
 	);
 };
@@ -93,18 +88,11 @@ export function EmployeeFormComp(props) {
 	);
 	const isEditView = viewMode === "EDIT";
 	const isRestrictedView = viewMode === "RESTRICTED";
-	const employees = useSelector((state) => state.totalEmployees);
+	const state = useSelector((state) => state);
 	const currentEmployee = useSelector(selectors.getCurrentEmployee);
-	const validationError = useSelector(selectors.getValidationError);
+	const validationErrors = useSelector(selectors.getValidationErrors);
 
 	const dispatch = useDispatch();
-
-	function isEmployeeIdAvailable(employeeId) {
-		return (
-			employees.findIndex((employee) => employee.employeeId === employeeId) !==
-			-1
-		);
-	}
 
 	function onSubmitHandler(e) {
 		e.preventDefault();
@@ -114,8 +102,24 @@ export function EmployeeFormComp(props) {
 		dispatch(actions[targetId](currentEmployee));
 		dispatch(actions.resetCurrentEmployee({}));
 		dispatch(actions.setEmployeeAdditionSuccess(true));
-		dispatch(actions.setValidationError({ error: false, message: "" }));
+		dispatch(actions.resetValidationErrors());
 		setTimeout(() => setSpinner(false), 500)
+	}
+
+	function isValidationError(target) {
+		const targetId = target.id;
+		const targetValue = target.value;
+		if (validationMapping[targetId] && validationMapping[targetId].validator(state, targetValue)) {
+			return {
+				field: targetId,
+				operation: 'ADD',
+				message: validationMapping[targetId].message,
+			}
+		}
+		return {
+			field: targetId,
+			operation: 'DELETE',
+		}
 	}
 
 	function onChangeHandler(e) {
@@ -123,17 +127,9 @@ export function EmployeeFormComp(props) {
 		const targetElement = e.target;
 		const targetId = targetElement.id;
 		const targetValue = targetElement.value;
-		if (targetId === "employeeId" && isEmployeeIdAvailable(targetValue)) {
-			dispatch(
-				actions.setValidationError({
-					error: true,
-					message: "Employee ID has been taken, Please find a unique ID",
-				})
-			);
-		} else {
-			dispatch(actions.setValidationError({ error: false, message: "" }));
-			dispatch(actions[targetId](targetValue));
-		}
+		const validationErrorObj = isValidationError(targetElement)
+		dispatch(actions.setValidationError(validationErrorObj));
+		dispatch(actions[targetId](targetValue));
 	}
 
 	return (
@@ -159,6 +155,7 @@ export function EmployeeFormComp(props) {
 										type="text"
 										id="firstName"
 										label="First Name"
+										validationErrors={validationErrors}
 										disabled={isRestrictedView}
 										required
 									/>
@@ -168,6 +165,7 @@ export function EmployeeFormComp(props) {
 										type="text"
 										id="middleName"
 										label="Middle Name"
+										validationErrors={validationErrors}
 										disabled={isRestrictedView}
 									/>
 									<Input
@@ -176,6 +174,7 @@ export function EmployeeFormComp(props) {
 										type="text"
 										id="lastName"
 										label="Last Name"
+										validationErrors={validationErrors}
 										disabled={isRestrictedView}
 										required
 									/>
@@ -185,6 +184,7 @@ export function EmployeeFormComp(props) {
 										type="text"
 										id="phone"
 										label="Phone Number"
+										validationErrors={validationErrors}
 										disabled={isRestrictedView}
 										required
 									/>
@@ -202,6 +202,7 @@ export function EmployeeFormComp(props) {
 										type="date"
 										id="dob"
 										label="Date of Birth"
+										validationErrors={validationErrors}
 										disabled={isRestrictedView}
 										required
 									/>
@@ -215,7 +216,7 @@ export function EmployeeFormComp(props) {
 										id="employeeId"
 										label="Employee ID"
 										disabled={isRestrictedView || isEditView}
-										validationError={validationError}
+										validationErrors={validationErrors}
 										required
 									/>
 									<Select
@@ -232,6 +233,7 @@ export function EmployeeFormComp(props) {
 										type="date"
 										id="hireDate"
 										label="Date of Hiring"
+										validationErrors={validationErrors}
 										disabled={isRestrictedView}
 										required
 									/>
@@ -241,6 +243,7 @@ export function EmployeeFormComp(props) {
 										type="email"
 										id="email"
 										label="Email"
+										validationErrors={validationErrors}
 										disabled={isRestrictedView}
 										required
 									/>
@@ -251,6 +254,7 @@ export function EmployeeFormComp(props) {
 										id="salary"
 										inputMode="numeric"
 										label="Salary"
+										validationErrors={validationErrors}
 										disabled={isRestrictedView}
 										required
 									/>
@@ -260,6 +264,7 @@ export function EmployeeFormComp(props) {
 										type="number"
 										id="yearsInPosition"
 										label="Years in Position"
+										validationErrors={validationErrors}
 										disabled={isRestrictedView}
 										required
 									/>
@@ -281,7 +286,7 @@ export function EmployeeFormComp(props) {
 									Edit
 								</button>
 							) : (
-								<input type="submit" class="btn btn-primary" value="Submit" />
+								<input type="submit" class="btn btn-primary" value="Submit" disabled={!isEmpty(validationErrors)}/>
 							)}
 						</form>
 					)}

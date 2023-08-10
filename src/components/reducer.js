@@ -22,7 +22,7 @@ const getCurrentEmployee = (state) => state.currentEmployee
 const employeeReducer = createReducer(employeeInitialState, (builder) => {
     builder
         .addCase(resetCurrentEmployee, (state, action) => action.payload)
-        .addMatcher((action) => !action.type.includes('object'), (state, action) => {
+        .addMatcher((action) => !action.type.includes('object') && action.type.includes('employee'), (state, action) => {
             const stateKey = action.type.split('/')[1]
             return { ...state, [stateKey]: action.payload }
         })
@@ -30,22 +30,22 @@ const employeeReducer = createReducer(employeeInitialState, (builder) => {
 
 const totalEmployeesInitialState = [
     {
-      firstName: 'Shreyas',
-      lastName: 'KJ',
-      phone: '9986569300',
-      dob: '1996-07-05',
-      hireDate: '2018-07-05',
-      email: 'shkamisetty@paypal.com',
-      salary: '105k',
-      yearsInPosition: '5',
-      employeeId: '1420712',
-      city: 'Toronto',
-      title: 'Developer'
+        firstName: 'Shreyas',
+        lastName: 'KJ',
+        phone: '9986569300',
+        dob: '1996-07-05',
+        hireDate: '2018-07-05',
+        email: 'shkamisetty@paypal.com',
+        salary: '105k',
+        yearsInPosition: '5',
+        employeeId: '1420712',
+        city: 'Toronto',
+        title: 'Developer'
     }
-  ]
+]
 
-const setEmployee = createAction('employee/setEmployee/object')
-const editEmployee = createAction('employee/editEmployee/object')
+const setEmployee = createAction('totalEmpls/setEmpls/object')
+const editEmployee = createAction('totalEmpls/editEmpls/object')
 
 const totalEmployeesReducer = createReducer(totalEmployeesInitialState, (builder) => {
     builder
@@ -63,16 +63,17 @@ const totalEmployeesReducer = createReducer(totalEmployeesInitialState, (builder
 const applicationState = {
     viewMode: 'ALLOWED',
     isEmployeeAdditionSuccess: false,
-    validationError: { error: false, message: '' }
+    validationErrors: {}
 }
 
 const setViewMode = createAction('app/setViewMode/object')
 const setEmployeeAdditionSuccess = createAction('app/setEmployeeAdditionSuccess/boolean')
 const setValidationError = createAction('app/setValidationError/obj')
+const resetValidationErrors = createAction('app/resetValidationErrors/obj')
 
 const getViewMode = (state) => state.progressState.viewMode
 const getEmployeeAdditionSuccess = (state) => state.progressState.isEmployeeAdditionSuccess
-const getValidationError = (state) => state.progressState.validationError
+const getValidationErrors = (state) => state.progressState.validationErrors
 
 const applicationStateReducer = createReducer(applicationState, (builder) => {
     builder
@@ -89,10 +90,16 @@ const applicationStateReducer = createReducer(applicationState, (builder) => {
             }
         })
         .addCase(setValidationError, (state, action) => {
-            return {
-                ...state,
-                validationError: action.payload
+            const operation = action.payload.operation
+            if (operation === 'ADD') {
+                state.validationErrors[action.payload.field] = action.payload.message
+            } else if (operation === 'DELETE') {
+                delete state.validationErrors[action.payload.field]
             }
+            return state
+        })
+        .addCase(resetValidationErrors, (state, action) => {
+            return { ...state, validationErrors: {} }
         })
 })
 
@@ -122,13 +129,14 @@ const actions = {
     setViewMode,
     setEmployeeAdditionSuccess,
     setValidationError,
+    resetValidationErrors
 }
 
 const selectors = {
     getViewMode,
     getCurrentEmployee,
     getEmployeeAdditionSuccess,
-    getValidationError,
+    getValidationErrors,
 }
 
 export {
