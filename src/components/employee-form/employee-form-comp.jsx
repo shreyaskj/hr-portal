@@ -69,6 +69,7 @@ export const OpenModal = (props) => {
 						<button
 							type="button"
 							class="btn-close"
+							onClick={props.onClick}
 							data-bs-dismiss="modal"
 							aria-label="Close"
 						></button>

@@ -20,7 +20,7 @@ function App() {
           Add Employee
         </button>
       </nav>
-      <OpenModal>
+      <OpenModal onClick={() => dispatch(actions.resetValidationErrors())}>
         <EmployeeFormComp />
       </OpenModal>
       <ViewEmployees />
